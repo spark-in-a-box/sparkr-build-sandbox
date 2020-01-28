@@ -10,9 +10,10 @@ install.packages(c('e1071', 'praise'))
 # - prettyunits
 # - withr
 # - pkgbuild
-# - ellipsis
 # - pkgload
 # - rlang
-install.packages('testthat', repos='https://cloud.r-project.org/')
+# We force installation of ellipsis, because there are some
+# unstated version restrictions between it and testthat
+install.packages(c("ellipsis", 'testthat'), repos='https://cloud.r-project.org/')
 
 quit()
