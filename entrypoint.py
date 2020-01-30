@@ -3,18 +3,11 @@
 import argparse
 import subprocess
 import os
+import shutil
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("user", help="GitHub username")
-    parser.add_argument("--branch", type=str, default="master", help="Branch to fetch")
-    parser.add_argument("--commit", help="Commit hash")
-    parser.add_argument(
-        "--public-key", help="URL pointing to GPG key used to sign the commit"
-    )
-    args = parser.parse_args()
 
+def git_clone(args):
     url = "https://github.com/{user}/spark.git".format(user=args.user)
 
     subprocess.check_call(
@@ -25,6 +18,10 @@ def main():
         subprocess.check_call(["git", "checkout", args.commit])
 
     subprocess.check_call(["git", "rev-parse", "HEAD"])
+
+
+def build_and_test(args):
+    git_clone(args)
 
     if args.public_key:
         wget = subprocess.Popen(
@@ -59,6 +56,35 @@ def main():
     subprocess.check_call(["R/create-docs.sh"])
     subprocess.check_call(["R/check-cran.sh"])
     subprocess.check_call(["R/run-tests.sh"])
+
+
+def resolve_dependencies(args):
+    git_clone(args)
+
+    subprocess.check_call(
+        ["build/mvn", "dependency:resolve", "-U"]
+    )
+    os.chdir("..")
+    shutil.rmtree("spark")
+
+
+def main():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("user", help="GitHub username")
+    parser.add_argument("--branch", type=str, default="master", help="Branch to fetch")
+    parser.add_argument("--commit", help="Commit hash")
+    parser.add_argument("--action", choices=["build-and-test", "resolve-dependencies"], default="build-and-test")
+    parser.add_argument(
+        "--public-key", help="URL pointing to GPG key used to sign the commit"
+    )
+
+    args = parser.parse_args()
+
+    if args.action == "build-and-test":
+        build_and_test(args)
+    else:
+        resolve_dependencies(args)
 
 
 if __name__ == "__main__":

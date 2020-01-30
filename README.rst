@@ -19,19 +19,27 @@ Entry point takes following arguments
 
 ::
 
-   usage: entrypoint.py [-h] [--branch BRANCH] [--commit COMMIT]
-                        [--public-key PUBLIC_KEY]
-                        user
+    usage: entrypoint.py [-h] [--branch BRANCH] [--commit COMMIT]
+                         [--action {build-and-test,resolve-dependencies}]
+                         [--public-key PUBLIC_KEY]
+                         user
 
-   positional arguments:
-     user                  GitHub username
+    positional arguments:
+      user                  GitHub username
 
-   optional arguments:
-     -h, --help            show this help message and exit
-     --branch BRANCH       Branch to fetch
-     --commit COMMIT       Commit hash
-     --public-key PUBLIC_KEY
-                           URL pointing to GPG key used to sign the commit
+    optional arguments:
+      -h, --help            show this help message and exit
+      --branch BRANCH       Branch to fetch
+      --commit COMMIT       Commit hash
+      --action {build-and-test,resolve-dependencies}
+      --public-key PUBLIC_KEY
+                            URL pointing to GPG key used to sign the commit
+
+
+`resolve-dependencies` action can be used to prefetch Maven dependencies.
+The result can be committed and use a base for actual testing image.
+
+
 
 Rendering of new images
 -----------------------
@@ -63,3 +71,9 @@ Versions
 +-----------------+----------------------+--------------------------+-----+-----------+
 | 3.6.2           | rocker/verse:3.6.2   | Debian GNU/Linux Buster  | 11  |  0.15.1   |
 +-----------------+----------------------+--------------------------+-----+-----------+
+
+Note
+------
+
+Images `published to Docker Hub <https://hub.docker.com/r/zero323/sparkr-build-sandbox>`__
+are not automatically synced, to avoid possible dependency conflicts.
