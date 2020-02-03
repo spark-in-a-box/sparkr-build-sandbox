@@ -6,7 +6,6 @@ import os
 import shutil
 
 
-
 def git_clone(args):
     url = "https://github.com/{user}/spark.git".format(user=args.user)
 
@@ -45,7 +44,13 @@ def build_and_test(args):
             for line in verify_stderr:
                 print(line)
 
-            if not any("Good signature" in line for line in verify_stderr):
+            if not verify_stderr:
+                print(
+                    "verify-commit returned {} but no error message. "
+                    "Missing signature?".format(verify_status_code)
+                )
+
+            elif not any("Good signature" in line for line in verify_stderr):
                 exit(1)
 
     subprocess.check_call(
@@ -61,9 +66,7 @@ def build_and_test(args):
 def resolve_dependencies(args):
     git_clone(args)
 
-    subprocess.check_call(
-        ["build/mvn", "dependency:resolve", "-U"]
-    )
+    subprocess.check_call(["build/mvn", "dependency:resolve", "-U"])
     os.chdir("..")
     shutil.rmtree("spark")
 
@@ -74,7 +77,11 @@ def main():
     parser.add_argument("user", help="GitHub username")
     parser.add_argument("--branch", type=str, default="master", help="Branch to fetch")
     parser.add_argument("--commit", help="Commit hash")
-    parser.add_argument("--action", choices=["build-and-test", "resolve-dependencies"], default="build-and-test")
+    parser.add_argument(
+        "--action",
+        choices=["build-and-test", "resolve-dependencies"],
+        default="build-and-test",
+    )
     parser.add_argument(
         "--public-key", help="URL pointing to GPG key used to sign the commit"
     )
